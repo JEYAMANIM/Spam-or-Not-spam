@@ -1,109 +1,101 @@
+/* Hallmark · theme: Cobalt · component: HistoryDrawer
+ * typography: Space Grotesk (headers), Geist (ui), JetBrains Mono (data-stamps)
+ */
 import React from 'react';
-import { X, Clock, CheckCircle2, XCircle, AlertTriangle, Trash2, RotateCcw } from 'lucide-react';
+import { X, Clock, CheckCircle2, AlertOctagon, AlertTriangle, Trash2, ArrowRight } from 'lucide-react';
 
 export default function HistoryDrawer({ isOpen, onClose, history, onSelectHistory, onClearHistory }) {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
-      />
-      <div
-        className="relative w-full max-w-md h-full glass-card border-l border-slate-800 flex flex-col animate-slide-up"
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <aside
+        className="relative w-full max-w-md h-full bg-[var(--color-paper)] border-l border-[var(--color-rule)] flex flex-col shadow-2xl"
         onClick={e => e.stopPropagation()}
-        style={{ animation: 'slide-in-right 0.3s cubic-bezier(0.4,0,0.2,1) both' }}
+        aria-label="Scan History Ledger"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-800">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--color-rule)]">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center space-x-2">
-              <Clock className="w-5 h-5 text-indigo-400" />
-              <span>Scan History</span>
+            <h2 className="text-sm font-semibold text-[var(--color-ink)] flex items-center space-x-2" style={{ fontFamily: 'var(--font-display)' }}>
+              <Clock className="w-4 h-4 text-[var(--color-accent)]" />
+              <span>Session Audit Log</span>
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">{history.length} recent scans</p>
+            <p className="text-[12px] font-mono text-[var(--color-neutral)] mt-0.5">{history.length} logged records</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             {history.length > 0 && (
               <button
+                type="button"
                 onClick={onClearHistory}
-                className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                title="Clear all history"
+                className="p-1.5 rounded-md text-[var(--color-neutral)] hover:text-[var(--color-danger)] hover:bg-[var(--color-paper-3)] transition-colors"
+                title="Flush History"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+              className="p-1.5 rounded-md text-[var(--color-neutral)] hover:text-[var(--color-ink)] hover:bg-[var(--color-paper-3)] transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* History List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-48 text-center text-slate-400">
-              <Clock className="w-10 h-10 mb-3 opacity-30" />
-              <p className="text-sm font-medium">No recent scans</p>
-              <p className="text-xs mt-1 opacity-60">Analyzed emails will appear here</p>
+            <div className="flex flex-col items-center justify-center h-48 text-center text-[var(--color-neutral)]">
+              <Clock className="w-8 h-8 mb-2.5 opacity-40" />
+              <p className="text-xs font-mono font-medium">No recorded evaluations</p>
+              <p className="text-[11px] mt-0.5 opacity-70">Analyzed vectors will appear here</p>
             </div>
           ) : (
             history.map((item, idx) => {
-              const Icon = item.is_spam
-                ? XCircle
-                : item.verdict === 'SUSPICIOUS'
-                  ? AlertTriangle
-                  : CheckCircle2;
-
-              const iconColor = item.is_spam
-                ? 'text-rose-400'
-                : item.verdict === 'SUSPICIOUS'
-                  ? 'text-amber-400'
-                  : 'text-emerald-400';
-
+              const isSpam = item.is_spam;
               return (
-                <button
+                <div
                   key={idx}
-                  type="button"
-                  onClick={() => { onSelectHistory(item); onClose(); }}
-                  className="w-full text-left p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 hover:bg-slate-800/60 transition-all group"
+                  onClick={() => {
+                    onSelectHistory(item);
+                    onClose();
+                  }}
+                  className="p-3 rounded-lg border border-[var(--color-rule)] bg-[var(--color-paper-2)] hover:bg-[var(--color-paper-3)] hover:border-[var(--color-rule-active)] transition-colors cursor-pointer group"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-center space-x-2">
-                      <Icon className={`w-4 h-4 shrink-0 ${iconColor}`} />
-                      <span className={`text-xs font-extrabold uppercase ${iconColor}`}>{item.verdict}</span>
-                      <span className="text-xs text-slate-500 font-bold">{item.spam_probability}%</span>
-                    </div>
-                    <span className="text-[10px] text-slate-500 shrink-0">
-                      {new Date(item._timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`data-tag font-semibold px-1.5 py-0.5 rounded border text-[10px] ${
+                      isSpam
+                        ? 'bg-[var(--color-danger-bg)] text-[var(--color-danger)] border-[var(--color-danger-rule)]'
+                        : 'bg-[var(--color-safe-bg)] text-[var(--color-safe)] border-[var(--color-safe-rule)]'
+                    }`}>
+                      {item.verdict || (isSpam ? 'SPAM' : 'HAM')} ({item.spam_probability}%)
+                    </span>
+                    <span className="text-[10px] font-mono text-[var(--color-neutral)]">
+                      {new Date(item._timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-slate-200 truncate">
-                    {item.subject || 'No Subject'}
+
+                  <p className="text-xs font-medium text-[var(--color-ink)] truncate mb-1">
+                    {item.subject || '(No Subject Line)'}
                   </p>
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5">
-                    {item.text_preview}
-                  </p>
-                  <div className="flex items-center text-[10px] text-indigo-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <RotateCcw className="w-3 h-3 mr-1" />
-                    Reload in analyzer
+
+                  <div className="flex items-center justify-between text-[11px] font-mono text-[var(--color-neutral)]">
+                    <span className="truncate max-w-[240px]">
+                      {(item.highlighted_keywords || []).slice(0, 2).join(', ') || 'No flags'}
+                    </span>
+                    <span className="text-[var(--color-accent)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+                      Inspect <ArrowRight className="w-3 h-3 ml-0.5" />
+                    </span>
                   </div>
-                </button>
+                </div>
               );
             })
           )}
         </div>
-      </div>
-
-      <style>{`
-        @keyframes slide-in-right {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      `}</style>
+      </aside>
     </div>
   );
 }

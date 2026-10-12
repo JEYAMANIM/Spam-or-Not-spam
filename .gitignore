@@ -22,3 +22,7 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Local agents / skills
+.agents/
+skills-lock.json

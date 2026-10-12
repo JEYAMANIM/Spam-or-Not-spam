@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://spamguard.ai/sitemap.xml

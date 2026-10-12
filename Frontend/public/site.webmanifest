@@ -1,0 +1,17 @@
+{
+  "name": "SpamGuard AI — Advanced Email Spam & Threat Detection",
+  "short_name": "SpamGuard AI",
+  "description": "Fast machine learning powered email spam and phishing detection engine.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/shield.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

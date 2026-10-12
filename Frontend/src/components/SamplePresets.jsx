@@ -1,20 +1,25 @@
+/* Hallmark · theme: Cobalt · component: SamplePresets
+ * typography: Space Grotesk (display), Geist (body), JetBrains Mono (data-tag)
+ */
 import React from 'react';
-import { Sparkles, AlertTriangle, ShieldCheck, Mail, ArrowRight } from 'lucide-react';
+import { Terminal, ArrowRight } from 'lucide-react';
 
 export default function SamplePresets({ examples = [], onSelectPreset, currentSubject }) {
   if (!examples || examples.length === 0) return null;
 
   return (
-    <div className="glass-card rounded-2xl p-6 mb-6">
+    <section className="hallmark-panel p-5 mb-6" aria-labelledby="presets-heading">
       
-      <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-[var(--color-rule)]">
         <div className="flex items-center space-x-2">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <h4 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
-            Quick-Test Sample Emails
-          </h4>
+          <Terminal className="w-4 h-4 text-[var(--color-accent)]" aria-hidden="true" />
+          <h2 id="presets-heading" className="text-xs font-semibold text-[var(--color-ink)] uppercase tracking-wider">
+            Curated Benchmark Payloads
+          </h2>
         </div>
-        <span className="text-[11px] text-slate-400">Click any preset to load</span>
+        <span className="text-[11px] font-mono text-[var(--color-neutral)]">
+          Select sample to populate telemetry
+        </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -27,40 +32,40 @@ export default function SamplePresets({ examples = [], onSelectPreset, currentSu
               key={item.id}
               type="button"
               onClick={() => onSelectPreset(item)}
-              className={`text-left p-3 rounded-xl border transition-all relative overflow-hidden group ${
+              className={`text-left p-3.5 rounded-lg border transition-colors relative overflow-hidden group cursor-pointer ${
                 isSelected
-                  ? 'bg-indigo-600/20 border-indigo-500 shadow-md shadow-indigo-500/10'
-                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-800/60'
+                  ? 'bg-[var(--color-paper-3)] border-[var(--color-accent)] shadow-sm'
+                  : 'bg-[var(--color-paper-2)] border-[var(--color-rule)] hover:border-[var(--color-rule-active)] hover:bg-[var(--color-paper-3)]/60'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+                <span className="text-xs font-semibold text-[var(--color-ink)] group-hover:text-white transition-colors">
                   {item.title}
                 </span>
                 <span
-                  className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${
+                  className={`data-tag font-medium px-2 py-0.5 rounded border text-[10px] ${
                     isSpam
-                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      ? 'bg-[var(--color-danger-bg)] text-[var(--color-danger)] border-[var(--color-danger-rule)]'
+                      : 'bg-[var(--color-safe-bg)] text-[var(--color-safe)] border-[var(--color-safe-rule)]'
                   }`}
                 >
-                  {isSpam ? 'Spam' : 'Safe Ham'}
+                  {isSpam ? 'MALICIOUS SPAM' : 'VERIFIED HAM'}
                 </span>
               </div>
 
-              <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-2">
+              <p className="text-[12px] text-[var(--color-neutral)] line-clamp-2 leading-relaxed mb-2 font-mono">
                 {item.subject}
               </p>
 
-              <div className="flex items-center text-[10px] font-semibold text-indigo-400 group-hover:text-indigo-300">
-                <span>Load into scanner</span>
-                <ArrowRight className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" />
+              <div className="flex items-center text-[11px] font-medium text-[var(--color-accent)] group-hover:underline">
+                <span>Load Vector</span>
+                <ArrowRight className="w-3 h-3 ml-1 transform group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
               </div>
             </button>
           );
         })}
       </div>
 
-    </div>
+    </section>
   );
 }

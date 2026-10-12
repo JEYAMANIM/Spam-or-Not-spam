@@ -1,38 +1,59 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Tag, AlertOctagon, Link2, DollarSign, Clock } from 'lucide-react';
+/* Hallmark · theme: Cobalt · component: ThreatHighlighter
+ * typography: Space Grotesk (headers), Geist (ui), JetBrains Mono (email payload)
+ * Performance: Memoized regex token parsing and keyword tree caching
+ */
+import React, { useState, useMemo } from 'react';
+import { Eye, EyeOff, Tag, AlertOctagon } from 'lucide-react';
+
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export default function ThreatHighlighter({ subject, text, keywords = [], metrics }) {
   const [highlightEnabled, setHighlightEnabled] = useState(true);
 
   if (!text && !subject) return null;
 
-  const fullText = subject ? `Subject: ${subject}\n\n${text}` : text;
+  const fullText = useMemo(() => {
+    return subject ? `Subject: ${subject}\n\n${text}` : text;
+  }, [subject, text]);
 
-  // Build regex for keyword matching
-  const renderHighlightedContent = () => {
-    if (!highlightEnabled || (!keywords || keywords.length === 0)) {
-      return <span className="whitespace-pre-wrap text-slate-300 font-mono text-xs sm:text-sm leading-relaxed">{fullText}</span>;
+  // Fast set lookup for keyword presence
+  const keywordSet = useMemo(() => {
+    return new Set(keywords.map(k => k.toLowerCase()));
+  }, [keywords]);
+
+  // Memoized regex construction to avoid rebuilding on every rerender
+  const regex = useMemo(() => {
+    if (!keywords || keywords.length === 0) return null;
+    const sorted = [...keywords].sort((a, b) => b.length - a.length);
+    const escaped = sorted.map(escapeRegex).join('|');
+    return new RegExp(`(${escaped})`, 'gi');
+  }, [keywords]);
+
+  // Memoized token partition rendering
+  const renderedContent = useMemo(() => {
+    if (!highlightEnabled || !regex || keywords.length === 0) {
+      return (
+        <span className="whitespace-pre-wrap text-[var(--color-ink)] font-mono text-xs leading-relaxed selection:bg-[var(--color-accent)] selection:text-white">
+          {fullText}
+        </span>
+      );
     }
-
-    // Sort keywords by length descending to match longer multi-word phrases first
-    const sortedKeywords = [...keywords].sort((a, b) => b.length - a.length);
-    const escaped = sortedKeywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-    const regex = new RegExp(`(${escaped})`, 'gi');
 
     const parts = fullText.split(regex);
 
     return (
-      <span className="whitespace-pre-wrap text-slate-300 font-mono text-xs sm:text-sm leading-relaxed">
+      <span className="whitespace-pre-wrap text-[var(--color-ink)] font-mono text-xs leading-relaxed">
         {parts.map((part, index) => {
-          const isMatch = keywords.some(k => k.toLowerCase() === part.toLowerCase());
-          if (isMatch) {
+          if (keywordSet.has(part.toLowerCase())) {
             return (
               <mark
                 key={index}
-                className="bg-rose-500/25 text-rose-200 border-b-2 border-rose-500 font-bold px-1 py-0.5 rounded shadow-sm shadow-rose-950/50 hover:bg-rose-500/40 transition-colors cursor-help inline-flex items-center space-x-1"
-                title={`Spam Trigger Keyword: "${part}"`}
+                className="bg-[var(--color-danger-bg)] text-[var(--color-danger)] border-b-2 border-[var(--color-danger)] font-semibold px-1 py-0.5 rounded-sm transition-colors cursor-help inline-block"
+                title={`Spam Indicator Trigger: "${part}"`}
               >
-                <span>{part}</span>
+                {part}
               </mark>
             );
           }
@@ -40,20 +61,20 @@ export default function ThreatHighlighter({ subject, text, keywords = [], metric
         })}
       </span>
     );
-  };
+  }, [fullText, highlightEnabled, regex, keywordSet, keywords.length]);
 
   return (
-    <div className="glass-card rounded-2xl p-6 mt-6">
+    <section className="hallmark-panel p-6 mt-6" aria-labelledby="threat-inspector-title">
       
       {/* Header with Switch */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-[var(--color-rule)]">
         <div className="flex items-center space-x-2">
-          <AlertOctagon className="w-5 h-5 text-rose-400" />
-          <h4 className="text-sm font-bold text-white uppercase tracking-wider">
-            Email Threat & Keyword Inspector
-          </h4>
+          <AlertOctagon className="w-4 h-4 text-[var(--color-danger)]" aria-hidden="true" />
+          <h3 id="threat-inspector-title" className="text-xs font-semibold text-[var(--color-ink)] uppercase tracking-wider">
+            Threat &amp; Keyword Token Inspector
+          </h3>
           {keywords && keywords.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            <span className="data-tag px-2 py-0.5 rounded border bg-[var(--color-danger-bg)] text-[var(--color-danger)] border-[var(--color-danger-rule)]">
               {keywords.length} Triggers
             </span>
           )}
@@ -61,28 +82,30 @@ export default function ThreatHighlighter({ subject, text, keywords = [], metric
 
         <button
           type="button"
-          onClick={() => setHighlightEnabled(!highlightEnabled)}
-          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+          onClick={() => setHighlightEnabled(prev => !prev)}
+          className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-mono transition-colors border cursor-pointer ${
             highlightEnabled
-              ? 'bg-rose-500/10 text-rose-300 border-rose-500/30 hover:bg-rose-500/20'
-              : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+              ? 'bg-[var(--color-danger-bg)] text-[var(--color-danger)] border-[var(--color-danger-rule)]'
+              : 'bg-[var(--color-paper-3)] text-[var(--color-neutral)] border-[var(--color-rule)] hover:text-[var(--color-ink)]'
           }`}
+          aria-pressed={highlightEnabled}
+          aria-label="Toggle keyword threat highlights"
         >
-          {highlightEnabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-          <span>{highlightEnabled ? 'Threat Highlights: ON' : 'Threat Highlights: OFF'}</span>
+          {highlightEnabled ? <Eye className="w-3.5 h-3.5" aria-hidden="true" /> : <EyeOff className="w-3.5 h-3.5" aria-hidden="true" />}
+          <span>{highlightEnabled ? 'HIGHLIGHTS: ACTIVE' : 'HIGHLIGHTS: MUTED'}</span>
         </button>
       </div>
 
       {/* Trigger Pills */}
       {keywords && keywords.length > 0 && highlightEnabled && (
-        <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          <span className="text-xs text-slate-400 font-medium mr-1 flex items-center">
-            <Tag className="w-3.5 h-3.5 mr-1 text-slate-500" /> Detected Flags:
+        <div className="flex flex-wrap items-center gap-1.5 mb-4" aria-label="Detected trigger words">
+          <span className="text-[11px] font-mono text-[var(--color-neutral)] mr-1 flex items-center">
+            <Tag className="w-3 h-3 mr-1 opacity-70" aria-hidden="true" /> Flagged Tokens:
           </span>
           {keywords.map((kw, idx) => (
             <span
               key={idx}
-              className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-rose-950/60 text-rose-300 border border-rose-700/50"
+              className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-[var(--color-paper-3)] text-[var(--color-danger)] border border-[var(--color-danger-rule)]"
             >
               {kw}
             </span>
@@ -90,11 +113,16 @@ export default function ThreatHighlighter({ subject, text, keywords = [], metric
         </div>
       )}
 
-      {/* Highlighted Email Body View */}
-      <div className="max-h-72 overflow-y-auto p-4 rounded-xl bg-slate-950/80 border border-slate-800/90 shadow-inner">
-        {renderHighlightedContent()}
+      {/* Raw Payload Monospace Terminal View */}
+      <div 
+        tabIndex={0}
+        role="region"
+        aria-label="Highlighted email payload text"
+        className="max-h-80 overflow-y-auto p-4 rounded-lg bg-[var(--color-paper)] border border-[var(--color-rule)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+      >
+        {renderedContent}
       </div>
 
-    </div>
+    </section>
   );
 }
